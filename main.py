@@ -1,8 +1,49 @@
 import pandas as pd
 import os
+from login import Account
 
 data_path = './Essential/'
 personal_path = './acc_list/'
+
+def create_acc():
+    while True:
+        temp_name = input("Enter your name : ")
+        temp_pass = input("Enter password : ")
+
+        temp_acc = Account(temp_name, temp_pass)
+
+        reg_pass = temp_acc.register()
+
+        if reg_pass:
+            break
+        else :
+            opt = input("Create another account? (Y?N)")
+            if opt == 'y' or opt == 'Y':
+                pass
+            elif opt == 'n' or opt == 'N':
+                temp_acc = None
+                break
+
+    return temp_acc
+
+def login_acc():
+    while True:
+        temp_name = input("Enter your name : ")
+        temp_pass = input("Enter password : ")
+
+        temp_acc = Account(temp_name, temp_pass)
+
+        log_pass = temp_acc.login()
+
+        if log_pass:
+            print("Okaerinasaimasen")
+            break
+        else:
+            print("Wrong password.... Dareduska?")
+            temp_acc = None
+            break
+    
+    return temp_acc
 
 def load_data(full_path):
     if not os.path.exists(full_path):
@@ -48,7 +89,20 @@ def save_data(df, filename):
     df.to_csv(filename, index=False)
 
 def main():
-    user_now = input("誰ですか (Daredesuka)?")
+
+    while True:
+        opt = int(input("1. Create Account\n2. Login\n3. Exit\n"))
+        if opt == 1:
+            user_acc = create_acc()
+            if user_acc is not None:
+                break
+        elif opt == 2:
+            user_acc = login_acc()
+            if user_acc is not None:
+                break
+        elif opt==3:
+            raise SystemExit
+    user_now = user_acc.get_name()
     full_path = personal_path + user_now
     main_df, misc_df = load_data(full_path)
     while True:
