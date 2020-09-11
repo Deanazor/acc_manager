@@ -1,7 +1,8 @@
 import os
 import hashlib
 import pandas as pd
-import numpy as np
+import random
+import string
 
 cur_path = os.getcwd()
 
@@ -12,11 +13,14 @@ sender = 'Sender.bat'
 receiver = 'Receiver.bat'
 
 class Account():
-    def __init__(self, acc_name, acc_pass):
+    def __init__(self, acc_name, acc_pass = None):
         super().__init__()
         self.acc_name = acc_name
         self.acc_pass = acc_pass
         self.df = None
+        self.bat_code = None
+        self.log_status = False
+        self.folder_status = False
     
     def load_data(self):
         if os.path.exists(data_path + "users.csv"):
@@ -33,10 +37,10 @@ class Account():
         salt_2 = salt_2[2:-1]
         salt_2 = bytes(salt_2, 'utf-8')
         key = hashlib.pbkdf2_hmac(
-            'sha256', # The hash digest algorithm for HMAC
-            passcode.encode('utf-8'), # Convert the password to bytes
-            salt_2, # Provide the salt
-            100000, # It is recommended to use at least 100,000 iterations of SHA-256
+            'sha256',
+            passcode.encode('utf-8'),
+            salt_2,
+            100000,
         )
 
         return salt, key
@@ -45,6 +49,8 @@ class Account():
         return self.acc_name
 
     def register(self):
+        if self.acc_pass is None:
+            _ = self.generate_password()
         self.load_data()
         salt, key = self.hash_pass(self.acc_pass)
 
@@ -72,20 +78,70 @@ class Account():
     
     def login(self):
         self.load_data()
-        log_info = self.df.loc[(self.df['main_name'] == self.acc_name)]
-        log_info['salt'] = log_info['salt'].astype(bytes)
-        salt = log_info['salt'][0]
+        log_info = pd.DataFrame().append(self.df.loc[(self.df['main_name'] == self.acc_name)], ignore_index=True)
+        salt = bytes(log_info['salt'][0], 'utf-8')
         key = log_info['key'][0]
         log_pass = False
 
         res_key = hashlib.pbkdf2_hmac(
-            'sha256', # The hash digest algorithm for HMAC
-            self.acc_pass.encode('utf-8'), # Convert the password to bytes
-            salt, # Provide the salt
-            100000, # It is recommended to use at least 100,000 iterations of SHA-256
+            'sha256',
+            self.acc_pass.encode('utf-8'),
+            salt,
+            100000,
         )
 
         if str(key) == str(res_key):
             log_pass = True
 
+        self.log_status = log_pass
         return log_pass
+    
+    def read_bat(self):
+        bat_path = './acc_list/Sender.bat'
+
+        with open(bat_path, 'r') as f:
+            self.bat_code = f.readlines()
+            f.close()
+    
+    def write_bat(self):
+        bat_path = './acc_list/Sender.bat'
+
+        with open(bat_path, 'w') as f:
+            for code in self.bat_code:
+                f.write(code)
+            f.close()
+
+    def lock_folder(self):
+        if self.df is None:
+            self.load_data()
+        
+        if self.bat_code is None:
+            self.read_bat()
+
+        bat_path = './acc_list/Sender.bat'
+        log_info = pd.DataFrame().append(self.df.loc[(self.df['main_name'] == self.acc_name)], ignore_index=True)
+        folder_name = log_info['main_name'][0]
+        folder_pass = log_info['key'][0]
+        folder_hide = folder_name + '.{21EC2020-3AEA-1069-A2DD-08002B30309D}'
+
+        self.bat_code[1] = 'call Receive.bat {} {} {} {}'.format(folder_name, folder_pass, folder_hide, folder_pass)
+
+        self.write_bat()
+
+        os.startfile(bat_path)
+    
+    def check_folder(self, name=None):
+        if name is None:
+            self.folder_status = os.path.exists(personal_path + self.acc_name)
+        else :
+            self.folder_status = os.path.exists(personal_path+name)
+
+        return self.folder_status
+
+    def generate_password(self):
+        length = random.randint(16, 25)
+        words = string.ascii_letters + string.digits
+        result = ''.join((random.choice(words) for i in range(length)))
+        self.acc_pass = result
+
+        return result

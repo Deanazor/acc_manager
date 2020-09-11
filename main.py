@@ -8,16 +8,22 @@ personal_path = './acc_list/'
 def create_acc():
     while True:
         temp_name = input("Enter your name : ")
-        temp_pass = input("Enter password : ")
-
-        temp_acc = Account(temp_name, temp_pass)
+        opt = input("Generate random password? (Y/N) ")
+        if opt =='y' or opt=='Y':
+            temp_acc = Account(temp_name)
+            temp_pass = temp_acc.generate_password()
+        elif opt == 'n' or opt == 'N': 
+            temp_pass = input("Enter password : ")
+            temp_acc = Account(temp_name, temp_pass)
 
         reg_pass = temp_acc.register()
 
         if reg_pass:
+            if opt =='y' or opt=='Y':
+                print("Your password is : {}".format(temp_pass))
             break
         else :
-            opt = input("Create another account? (Y?N)")
+            opt = input("Create another account? (Y/N) ")
             if opt == 'y' or opt == 'Y':
                 pass
             elif opt == 'n' or opt == 'N':
@@ -89,7 +95,6 @@ def save_data(df, filename):
     df.to_csv(filename, index=False)
 
 def main():
-
     while True:
         opt = int(input("1. Create Account\n2. Login\n3. Exit\n"))
         if opt == 1:
@@ -102,9 +107,11 @@ def main():
                 break
         elif opt==3:
             raise SystemExit
+
     user_now = user_acc.get_name()
     full_path = personal_path + user_now
     main_df, misc_df = load_data(full_path)
+
     while True:
         opt = int(input("1. Add account\n2. Add other info\n3. Save data\n4. See tables\n5. Exit\n"))
         if opt==1:
@@ -120,4 +127,5 @@ def main():
             print(misc_df)
         elif opt==5:
             break
+
 main()
