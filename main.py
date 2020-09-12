@@ -52,8 +52,6 @@ def login_acc():
     return temp_acc
 
 def load_data(full_path):
-    if not os.path.exists(full_path):
-        os.mkdir(full_path)
     if os.path.exists(full_path + '/main_info.csv'):
         try : 
             main_df = pd.read_csv(full_path + '/main_info.csv')
@@ -94,6 +92,20 @@ def add_misc(df):
 def save_data(df, filename):
     df.to_csv(filename, index=False)
 
+def del_data(main_df, misc_df):
+    del_acc = input("Enter the account type to be deleted : ")
+    del_uname = input("Enter the username of the account : ")
+
+    for i in main_df.index:
+        if main_df['acc_name'][i] == del_acc and main_df['acc_uname'][i] == del_uname:
+            main_df.drop(i, axis=0, inplace=True)
+    
+    for i in misc_df.index:
+        if misc_df['acc_name'][i] == del_acc and misc_df['acc_uname'][i] == del_uname:
+            misc_df.drop(i, axis=0, inplace=True)
+    
+    return main_df, misc_df
+
 def main():
     while True:
         opt = int(input("1. Create Account\n2. Login\n3. Exit\n"))
@@ -113,19 +125,24 @@ def main():
     main_df, misc_df = load_data(full_path)
 
     while True:
-        opt = int(input("1. Add account\n2. Add other info\n3. Save data\n4. See tables\n5. Exit\n"))
+        opt = int(input("1. Add account\n2. Add other info\n3. Delete Account\n4. Save data\n5. See tables\n6. Check Status\n7. Exit\n"))
         if opt==1:
             main_df = add_acc(main_df)
         elif opt==2:
             misc_df = add_misc(misc_df)
         elif opt==3:
+            main_df, misc_df = del_data(main_df, misc_df)
+        elif opt==4:
             save_data(main_df, full_path+'/main_info.csv')
             save_data(misc_df, full_path+'/misc_info.csv')
-        elif opt==4:
+        elif opt==5:
             print(main_df)
             print("\n")
             print(misc_df)
-        elif opt==5:
+        elif opt==6:
+            user_acc.check_status()
+        elif opt==7:
+            # user_acc.logout()
             break
 
 main()

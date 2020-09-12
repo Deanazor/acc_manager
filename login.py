@@ -73,11 +73,16 @@ class Account():
         
         if reg_pass:
             self.df.to_csv(data_path + 'users.csv', index = False)
+            self.log_status = True
 
         return reg_pass
     
     def login(self):
         self.load_data()
+
+        # if not self.check_folder():
+        #     self.lock_folder()
+
         log_info = pd.DataFrame().append(self.df.loc[(self.df['main_name'] == self.acc_name)], ignore_index=True)
         salt = bytes(log_info['salt'][0], 'utf-8')
         key = log_info['key'][0]
@@ -111,6 +116,14 @@ class Account():
                 f.write(code)
             f.close()
 
+    def exec_bat(self, bat_file):
+        cur_dir = os.getcwd()
+        print(cur_dir)
+
+        os.chdir('./acc_list/')
+        os.startfile(bat_file)
+        os.chdir(cur_dir)
+
     def lock_folder(self):
         if self.df is None:
             self.load_data()
@@ -118,17 +131,27 @@ class Account():
         if self.bat_code is None:
             self.read_bat()
 
-        bat_path = './acc_list/Sender.bat'
+        # bat_path = './acc_list/Sender.bat'
         log_info = pd.DataFrame().append(self.df.loc[(self.df['main_name'] == self.acc_name)], ignore_index=True)
         folder_name = log_info['main_name'][0]
         folder_pass = log_info['key'][0]
-        folder_hide = folder_name + '.{21EC2020-3AEA-1069-A2DD-08002B30309D}'
+        folder_salt = bytes(log_info['salt'][0], 'utf-8')
+        folder_hide = '\"' + folder_name +'.{21EC2020-3AEA-1069-A2DD-08002B30309D}\"'
 
-        self.bat_code[1] = 'call Receive.bat {} {} {} {}'.format(folder_name, folder_pass, folder_hide, folder_pass)
+        res_key = hashlib.pbkdf2_hmac(
+            'sha256',
+            self.acc_pass.encode('utf-8'),
+            folder_salt,
+            100000,
+        )
+
+        res_key = str(res_key)
+
+        self.bat_code[1] = 'call Receive.bat {} {} {} {}'.format(folder_name, folder_pass, folder_hide, res_key)
 
         self.write_bat()
 
-        os.startfile(bat_path)
+        self.exec_bat('Sender.bat')
     
     def check_folder(self, name=None):
         if name is None:
@@ -145,3 +168,10 @@ class Account():
         self.acc_pass = result
 
         return result
+
+    def check_status(self):
+        print("Logged-in : {}".format(self.log_status))
+        print("Table status : {}".format(self.check_folder()))
+    
+    def logout(self):
+        self.lock_folder()
