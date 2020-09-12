@@ -51,6 +51,24 @@ def login_acc():
     
     return temp_acc
 
+def log_remember():
+    while True:
+        temp_name = input("Enter your name : ")
+
+        temp_acc = Account(temp_name)
+
+        log_pass = temp_acc.log_remember()
+
+        if log_pass:
+            print("Okaerinasaimasen")
+            break
+        else:
+            print("Wrong password.... Dareduska?")
+            temp_acc = None
+            break
+    
+    return temp_acc
+
 def load_data(full_path):
     if os.path.exists(full_path + '/main_info.csv'):
         try : 
@@ -131,8 +149,10 @@ def search_data(main_df, misc_df):
         print("\nSorry, account not found\n")
 
 def main():
+    rem_acc = False
+    
     while True:
-        opt = int(input("1. Create Account\n2. Login\n3. Exit\n"))
+        opt = int(input("1. Create Account\n2. Login\n3. Remembered Account\n4. Exit\n"))
         if opt == 1:
             user_acc = create_acc()
             if user_acc is not None:
@@ -141,9 +161,19 @@ def main():
             user_acc = login_acc()
             if user_acc is not None:
                 break
-        elif opt==3:
+        elif opt == 3:
+            user_acc = log_remember()
+            if user_acc is not None:
+                rem_acc = True
+                break
+        elif opt == 4:
             raise SystemExit
-
+    
+    if not rem_acc:
+        opt = input("Remember login info? (Y?N) ")
+        if opt == 'y' or opt == 'Y':
+            user_acc.Remember()
+    
     user_now = user_acc.get_name()
     full_path = personal_path + user_now
     main_df, misc_df = load_data(full_path)
@@ -163,6 +193,7 @@ def main():
             search_data(main_df, misc_df)
         elif opt==6:
             print(main_df)
+            print("\n")
         elif opt==7:
             user_acc.check_status()
         elif opt==8:

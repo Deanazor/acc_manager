@@ -175,3 +175,32 @@ class Account():
     
     def logout(self):
         self.lock_folder()
+    
+    def Remember(self):
+        data_exist = os.path.exists(data_path + 'remember.csv')
+
+        if data_exist:
+            try : 
+                df = pd.read_csv(data_path + "remember.csv")
+            except UnicodeDecodeError:
+                df = pd.DataFrame(columns=['acc_name', 'acc_pass'])
+        else :
+            df = pd.DataFrame(columns=['acc_name', 'acc_pass'])
+        
+        if df.empty:
+            df = df.append({'acc_name' : self.acc_name, 'acc_pass' : self.acc_pass}, ignore_index=True)
+        else:
+            df.drop(df.index, axis = 0, inplace=True)
+            df = df.append({'acc_name' : self.acc_name, 'acc_pass' : self.acc_pass}, ignore_index=True)
+        
+        df.to_csv(data_path + 'remember.csv', index=False)
+    
+    def log_remember(self):
+        df = pd.read_csv(data_path + "remember.csv")
+
+        if self.acc_name == df['acc_name'][0]:
+            self.acc_name = df['acc_name'][0]
+            self.acc_pass = df['acc_pass'][0]
+
+        is_log = self.login()
+        return is_log
