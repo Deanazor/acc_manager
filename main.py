@@ -106,6 +106,30 @@ def del_data(main_df, misc_df):
     
     return main_df, misc_df
 
+def search_data(main_df, misc_df):
+    src_acc = input("Enter Account type : ")
+    src_uname = input("Enter account username : ")
+    found = False
+
+    for i in main_df.index:
+        fnd_acc = main_df['acc_name'][i]
+        fnd_uname = main_df['acc_uname'][i]
+        if fnd_acc == src_acc and fnd_uname == src_uname:
+            print("\nAccount : {} with username : {} is found!".format(fnd_acc, fnd_uname))
+            found = True
+
+    if found:
+        print("Other info :")
+        for i in misc_df.index:
+            if misc_df['acc_name'][i] == src_acc and misc_df['acc_uname'][i] == src_uname:
+                fnd_info = misc_df['info'][i]
+                fnd_desc = misc_df['desc'][i]
+                print("{} : {}".format(fnd_info, fnd_desc))
+        print("\n")
+    
+    else : 
+        print("\nSorry, account not found\n")
+
 def main():
     while True:
         opt = int(input("1. Create Account\n2. Login\n3. Exit\n"))
@@ -125,7 +149,7 @@ def main():
     main_df, misc_df = load_data(full_path)
 
     while True:
-        opt = int(input("1. Add account\n2. Add other info\n3. Delete Account\n4. Save data\n5. See tables\n6. Check Status\n7. Exit\n"))
+        opt = int(input("1. Add account\n2. Add other info\n3. Delete Account\n4. Save data\n5. Search Account\n6. See tables\n7. Check Status\n8. Exit\n"))
         if opt==1:
             main_df = add_acc(main_df)
         elif opt==2:
@@ -136,12 +160,12 @@ def main():
             save_data(main_df, full_path+'/main_info.csv')
             save_data(misc_df, full_path+'/misc_info.csv')
         elif opt==5:
-            print(main_df)
-            print("\n")
-            print(misc_df)
+            search_data(main_df, misc_df)
         elif opt==6:
-            user_acc.check_status()
+            print(main_df)
         elif opt==7:
+            user_acc.check_status()
+        elif opt==8:
             # user_acc.logout()
             break
 
