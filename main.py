@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 from login import Account
+import getpass
 
 data_path = './Essential/'
 personal_path = './acc_list/'
@@ -13,7 +14,7 @@ def create_acc():
             temp_acc = Account(temp_name)
             temp_pass = temp_acc.generate_password()
         elif opt == 'n' or opt == 'N': 
-            temp_pass = input("Enter password : ")
+            temp_pass = getpass.getpass("Enter your password : ")
             temp_acc = Account(temp_name, temp_pass)
 
         reg_pass = temp_acc.register()
@@ -39,13 +40,17 @@ def login_acc():
 
         temp_acc = Account(temp_name, temp_pass)
 
-        log_pass = temp_acc.login()
+        log_pass, log_found = temp_acc.login()
 
         if log_pass:
             print("Okaerinasaimasen")
             break
-        else:
-            print("Wrong password.... Dareduska?")
+        elif log_found and not log_pass:
+            print("Wrong username or password....!!!!")
+            temp_acc = None
+            break
+        elif not log_found :
+            print("Wrong username or password....!!!!")
             temp_acc = None
             break
     
@@ -60,7 +65,7 @@ def log_remember():
         log_pass = temp_acc.log_remember()
 
         if log_pass:
-            print("Okaerinasaimasen")
+            print("Welcome Back !!!")
             break
         else:
             print("Wrong password.... Dareduska?")
@@ -150,7 +155,7 @@ def search_data(main_df, misc_df):
 
 def main():
     rem_acc = False
-    
+
     while True:
         opt = int(input("1. Create Account\n2. Login\n3. Remembered Account\n4. Exit\n"))
         if opt == 1:

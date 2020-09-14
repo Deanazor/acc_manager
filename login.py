@@ -82,24 +82,31 @@ class Account():
 
         # if not self.check_folder():
         #     self.lock_folder()
-
-        log_info = pd.DataFrame().append(self.df.loc[(self.df['main_name'] == self.acc_name)], ignore_index=True)
-        salt = bytes(log_info['salt'][0], 'utf-8')
-        key = log_info['key'][0]
+        found = False
+        try :
+            log_info = pd.DataFrame().append(self.df.loc[(self.df['main_name'] == self.acc_name)], ignore_index=True)
+            salt = bytes(log_info['salt'][0], 'utf-8')
+            key = log_info['key'][0]
+            found = True
+        except IndexError:
+            pass
+        
         log_pass = False
 
-        res_key = hashlib.pbkdf2_hmac(
-            'sha256',
-            self.acc_pass.encode('utf-8'),
-            salt,
-            100000,
-        )
+        if found:
+            res_key = hashlib.pbkdf2_hmac(
+                'sha256',
+                self.acc_pass.encode('utf-8'),
+                salt,
+                100000,
+            )
 
-        if str(key) == str(res_key):
-            log_pass = True
+            if str(key) == str(res_key):
+                log_pass = True
 
-        self.log_status = log_pass
-        return log_pass
+            self.log_status = log_pass
+        
+        return log_pass, found
     
     def read_bat(self):
         bat_path = './acc_list/Sender.bat'
