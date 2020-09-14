@@ -73,6 +73,7 @@ class Account():
         
         if reg_pass:
             self.df.to_csv(data_path + 'users.csv', index = False)
+            os.mkdir(personal_path + self.acc_name)
             self.log_status = True
 
         return reg_pass
@@ -211,3 +212,24 @@ class Account():
 
         is_log = self.login()
         return is_log
+    
+    def delete(self):
+        removed = False
+        if self.df is None:
+            self.load_data()
+        
+        for i in self.df.index:
+            if self.df['main_name'][i] == self.acc_name:
+                if os.path.exists(personal_path + self.acc_name):
+                    os.remove(personal_path + self.acc_name + '/main_info.csv')
+                    os.remove(personal_path + self.acc_name + '/misc_info.csv')
+                    os.rmdir(personal_path + self.acc_name)
+                self.df.drop(i, axis=0, inplace=True)
+                removed = True
+        
+        if removed : 
+            self.df.to_csv(data_path + 'users.csv', index = False)
+        
+        return removed
+
+        

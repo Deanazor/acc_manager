@@ -74,6 +74,19 @@ def log_remember():
     
     return temp_acc
 
+def remove_acc(target_acc):
+    opt = input("Are you sure you want to delete account? (Y/N) ")
+
+    removed = False
+    if opt == 'y' or opt == 'Y':
+        print("Attempting to delete account....")
+        removed = target_acc.delete()
+    
+    if removed:
+        print("Account removed succesfully")
+        print("We're sorry to say good bye")
+        raise SystemExit
+
 def load_data(full_path):
     if os.path.exists(full_path + '/main_info.csv'):
         try : 
@@ -184,7 +197,7 @@ def main():
     main_df, misc_df = load_data(full_path)
 
     while True:
-        opt = int(input("1. Add account\n2. Add other info\n3. Delete Account\n4. Save data\n5. Search Account\n6. See tables\n7. Check Status\n8. Exit\n"))
+        opt = int(input("1. Add account\n2. Add other info\n3. Delete table account\n4. Save data\n5. Search Account\n6. See tables\n7. Check Status\n8. Delete Account\n9. Exit\n"))
         if opt==1:
             main_df = add_acc(main_df)
         elif opt==2:
@@ -202,6 +215,8 @@ def main():
         elif opt==7:
             user_acc.check_status()
         elif opt==8:
+            remove_acc(user_acc)
+        elif opt==9:
             # user_acc.logout()
             break
 
